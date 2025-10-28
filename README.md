@@ -1,211 +1,280 @@
-# Projet dbt - Configuration et Démarrage
+# dbt Databricks Project - Setup and Getting Started
 
 ## 📋 Description
 
-Ce projet utilise dbt (data build tool) pour transformer et modéliser les données dans notre entrepôt de données. dbt permet de gérer les transformations SQL de manière modulaire, testable et documentée.
+This project uses dbt (data build tool) to transform and model data in Databricks. dbt enables managing SQL transformations in a modular, testable, and documented way, leveraging Databricks' powerful lakehouse architecture.
 
-## 🎯 Objectifs
+## 🎯 Objectives
 
-- Centraliser les transformations de données
-- Assurer la qualité des données par des tests automatisés
-- Documenter les modèles et les sources de données
-- Faciliter la collaboration entre les analystes et ingénieurs de données
+- Centralize data transformations in Databricks
+- Ensure data quality through automated testing
+- Document models and data sources
+- Facilitate collaboration between data analysts and engineers
+- Leverage Delta Lake and Databricks features
 
-## 🛠️ Prérequis
+## 🛠️ Prerequisites
 
-Avant de commencer, assurez-vous d'avoir installé :
+Before starting, ensure you have:
 
-- Python 3.8 ou supérieur
-- pip (gestionnaire de paquets Python)
+- Python 3.8 or higher
+- pip (Python package manager)
 - Git
-- Accès à votre entrepôt de données (Snowflake, BigQuery, Redshift, PostgreSQL, etc.)
+- Access to a Databricks workspace
+- Databricks personal access token or OAuth credentials
+- SQL Warehouse or All-Purpose Cluster in Databricks
 
 ## 📦 Installation
 
-### 1. Cloner le repository
+### 1. Clone the repository
 
 ```bash
-git clone <url-du-repository>
-cd <nom-du-projet>
+git clone <repository-url>
+cd <project-name>
 ```
 
-### 2. Créer un environnement virtuel
+### 2. Create a virtual environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Sur Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### 3. Installer dbt et les dépendances
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Ou pour une installation spécifique à votre plateforme :
-
-```bash
-# Pour Snowflake
-pip install dbt-snowflake
-
-# Pour BigQuery
-pip install dbt-bigquery
-
-# Pour PostgreSQL
-pip install dbt-postgres
-
-# Pour Redshift
-pip install dbt-redshift
-```
-
 ## ⚙️ Configuration
 
-### 1. Configuration du profil dbt
+### 1. Configure dbt profile
 
-Créez ou modifiez le fichier `~/.dbt/profiles.yml` :
+Create or modify the file `~/.dbt/profiles.yml`:
 
 ```yaml
-mon_projet:
+databricks_project:
   target: dev
   outputs:
     dev:
-      type: postgres  # ou snowflake, bigquery, redshift
-      host: localhost
-      user: votre_utilisateur
-      password: votre_mot_de_passe
-      port: 5432
-      dbname: votre_base_de_donnees
+      type: databricks
+      catalog: dev_catalog  # Unity Catalog (optional)
       schema: dbt_dev
+      host: your-workspace.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/your-warehouse-id
+      token: "{{ env_var('DATABRICKS_TOKEN') }}"
       threads: 4
     
     prod:
-      type: postgres
-      host: production-host
-      user: prod_user
-      password: "{{ env_var('DBT_PASSWORD') }}"
-      port: 5432
-      dbname: prod_database
+      type: databricks
+      catalog: prod_catalog
       schema: analytics
+      host: your-workspace.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/your-prod-warehouse-id
+      token: "{{ env_var('DATABRICKS_TOKEN') }}"
       threads: 8
 ```
 
-### 2. Variables d'environnement (optionnel)
+**Alternative configuration using SQL Warehouse:**
 
-Créez un fichier `.env` à la racine du projet :
-
-```bash
-DBT_PASSWORD=votre_mot_de_passe_prod
-DBT_USER=votre_utilisateur
+```yaml
+databricks_project:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      catalog: main  # Unity Catalog
+      schema: dbt_dev
+      host: your-workspace.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/abc123def456
+      token: "{{ env_var('DATABRICKS_TOKEN') }}"
+      threads: 4
 ```
 
-**Note:** Ajoutez `.env` à votre `.gitignore` pour ne pas versionner les secrets.
+### 2. Environment variables
 
-## 🏗️ Structure du projet
+Create a `.env` file at the project root:
+
+```bash
+DATABRICKS_TOKEN=dapi1234567890abcdef
+DATABRICKS_HOST=your-workspace.cloud.databricks.com
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/your-warehouse-id
+```
+
+**Important:** Add `.env` to your `.gitignore` to avoid versioning secrets.
+
+### 3. Get your Databricks credentials
+
+**Personal Access Token:**
+1. Log into Databricks workspace
+2. Click your username → Settings → Developer
+3. Under Access tokens, click "Manage" → "Generate new token"
+4. Copy and save the token securely
+
+**SQL Warehouse HTTP Path:**
+1. Go to SQL Warehouses in Databricks
+2. Select your warehouse
+3. Click "Connection details"
+4. Copy the "Server hostname" and "HTTP path"
+
+## 🏗️ Project Structure
 
 ```
 .
-├── analyses/          # Requêtes SQL ad-hoc
-├── macros/            # Fonctions SQL réutilisables
-├── models/            # Modèles de transformation
-│   ├── staging/       # Modèles de staging (sources brutes)
-│   ├── intermediate/  # Modèles intermédiaires
-│   └── marts/         # Modèles finaux (data marts)
-├── seeds/             # Fichiers CSV de référence
-├── snapshots/         # Tables de type SCD (Slowly Changing Dimensions)
-├── tests/             # Tests personnalisés
-├── dbt_project.yml    # Configuration du projet
-└── packages.yml       # Packages dbt externes
+├── analyses/          # Ad-hoc SQL queries
+├── macros/            # Reusable SQL functions
+├── models/            # Transformation models
+│   ├── staging/       # Staging models (raw sources)
+│   ├── intermediate/  # Intermediate models
+│   └── marts/         # Final models (data marts)
+├── seeds/             # CSV reference files
+├── snapshots/         # SCD (Slowly Changing Dimensions) tables
+├── tests/             # Custom tests
+├── dbt_project.yml    # Project configuration
+├── packages.yml       # External dbt packages
+└── requirements.txt   # Python dependencies
 ```
 
-## 🚀 Commandes principales
+## 🚀 Main Commands
 
-### Vérifier la configuration
+### Verify configuration
 
 ```bash
 dbt debug
 ```
 
-### Installer les packages dbt
+### Install dbt packages
 
 ```bash
 dbt deps
 ```
 
-### Exécuter les modèles
+### Run models
 
 ```bash
-# Exécuter tous les modèles
+# Run all models
 dbt run
 
-# Exécuter un modèle spécifique
-dbt run --select nom_du_modele
+# Run a specific model
+dbt run --select model_name
 
-# Exécuter les modèles d'un dossier
+# Run models from a folder
 dbt run --select staging.*
 
-# Exécuter en mode full-refresh (reconstruction complète)
+# Full refresh mode (complete rebuild)
 dbt run --full-refresh
+
+# Run with specific materialization
+dbt run --select model_name --vars 'materialized: incremental'
 ```
 
-### Tester les modèles
+### Test models
 
 ```bash
-# Exécuter tous les tests
+# Run all tests
 dbt test
 
-# Tester un modèle spécifique
-dbt test --select nom_du_modele
+# Test a specific model
+dbt test --select model_name
+
+# Test sources
+dbt test --select source:*
 ```
 
-### Générer la documentation
+### Generate documentation
 
 ```bash
-# Générer la documentation
+# Generate documentation
 dbt docs generate
 
-# Servir la documentation localement
+# Serve documentation locally
 dbt docs serve
 ```
 
-### Charger les seeds
+### Load seeds
 
 ```bash
 dbt seed
 ```
 
-### Compiler les modèles (sans exécution)
+### Compile models (without execution)
 
 ```bash
 dbt compile
 ```
 
-## 🔄 Workflow de développement
+## 🎯 Databricks-Specific Features
 
-1. Créer une branche pour vos modifications
-2. Développer vos modèles dans le dossier approprié
-3. Tester localement avec `dbt run` et `dbt test`
-4. Documenter vos modèles dans les fichiers `.yml`
-5. Créer une pull request
-6. Après validation, merger dans la branche principale
+### Unity Catalog
 
-## 📝 Bonnes pratiques
+This project supports Unity Catalog for data governance:
 
-- Toujours tester vos modèles avant de les déployer
-- Documenter chaque modèle et colonne importante
-- Utiliser des noms explicites et cohérents
-- Éviter les SELECT * dans les modèles de production
-- Privilégier les modèles incrémentaux pour les grandes tables
-- Utiliser des macros pour éviter la duplication de code
+```sql
+-- Model example with Unity Catalog
+{{ config(
+    materialized='table',
+    catalog='production',
+    schema='analytics'
+) }}
 
-## 🧪 Tests
+SELECT * FROM {{ source('raw', 'customers') }}
+```
 
-Les tests dbt incluent :
+### Delta Lake Optimizations
 
-- **Tests génériques** : `unique`, `not_null`, `accepted_values`, `relationships`
-- **Tests personnalisés** : définis dans le dossier `tests/`
-- **Tests de sources** : validation des données sources
+Use Delta Lake features in your models:
 
-Exemple de test dans un fichier `schema.yml` :
+```sql
+{{ config(
+    materialized='incremental',
+    file_format='delta',
+    incremental_strategy='merge',
+    unique_key='id',
+    on_schema_change='sync_all_columns'
+) }}
+```
+
+### Liquid Clustering (Databricks 13.3+)
+
+```sql
+{{ config(
+    materialized='table',
+    file_format='delta',
+    liquid_clustered_by='date, category'
+) }}
+```
+
+## 🔄 Development Workflow
+
+1. Create a branch for your changes
+2. Develop models in the appropriate folder
+3. Test locally with `dbt run` and `dbt test`
+4. Document your models in `.yml` files
+5. Create a pull request
+6. After validation, merge to main branch
+7. Deploy to production
+
+## 📝 Best Practices
+
+- Always test models before deployment
+- Document each model and important columns
+- Use explicit and consistent naming conventions
+- Avoid SELECT * in production models
+- Use incremental models for large tables
+- Leverage Delta Lake optimizations (Z-ordering, liquid clustering)
+- Use Unity Catalog for proper data governance
+- Configure appropriate file formats (Delta recommended)
+- Use macros to avoid code duplication
+- Monitor query performance in Databricks
+
+## 🧪 Testing
+
+dbt tests include:
+
+- **Generic tests**: `unique`, `not_null`, `accepted_values`, `relationships`
+- **Custom tests**: defined in the `tests/` folder
+- **Source tests**: validation of source data
+
+Example test in a `schema.yml` file:
 
 ```yaml
 models:
@@ -218,28 +287,45 @@ models:
       - name: email
         tests:
           - unique
+          - not_null
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['active', 'inactive', 'pending']
 ```
 
-## 🤝 Contribution
+## 🔐 Security Considerations
 
-Les contributions sont les bienvenues ! Veuillez suivre ces étapes :
+- Never commit tokens or credentials to Git
+- Use environment variables for sensitive data
+- Rotate access tokens regularly
+- Use service principals for production deployments
+- Implement proper Unity Catalog permissions
+- Use secret scopes in Databricks when possible
 
-1. Fork le projet
-2. Créez une branche pour votre feature
-3. Committez vos changements
-4. Poussez vers la branche
-5. Ouvrez une Pull Request
+## 🤝 Contributing
 
-## 📚 Ressources
+Contributions are welcome! Please follow these steps:
 
-- [Documentation officielle dbt](https://docs.getdbt.com/)
-- [Best practices dbt](https://docs.getdbt.com/guides/best-practices)
-- [dbt Learn (cours gratuits)](https://courses.getdbt.com/)
+1. Fork the project
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 📚 Resources
+
+- [dbt Official Documentation](https://docs.getdbt.com/)
+- [dbt-databricks adapter documentation](https://docs.getdbt.com/reference/warehouse-setups/databricks-setup)
+- [Databricks SQL Documentation](https://docs.databricks.com/sql/index.html)
+- [Unity Catalog Documentation](https://docs.databricks.com/data-governance/unity-catalog/index.html)
+- [dbt Best Practices](https://docs.getdbt.com/guides/best-practices)
+- [dbt Learn (free courses)](https://courses.getdbt.com/)
 
 ## 📧 Contact
 
-Pour toute question, contactez [votre-email@example.com]
+For any questions, contact [your-email@example.com]
 
-## 📄 Licence
+## 📄 License
 
-Ce projet est sous licence [MIT/Apache/etc.]
+This project is licensed under [MIT/Apache/etc.]
