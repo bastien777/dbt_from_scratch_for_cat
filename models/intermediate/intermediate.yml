@@ -1,0 +1,89 @@
+version: 2
+
+models:
+
+  - name: jaffle_shop_customers_cleaned
+    description: "Dimension Table concerning the Customers with their First and Last Name."
+    columns:
+      - name: id
+        description: "Primary key for customers"
+        tests:
+          - unique
+          - not_null
+
+      - name: first_name
+        description: "Customer First Name"
+        tests:
+          - not_null
+
+      - name: last_name
+        description: "Customer last name"
+
+
+  - name: jaffle_shop_orders_cleaned
+    description: "Raw order transactions from e-commerce platform"
+    columns:
+      - name: id
+        description: "Primary key for orders"
+        tests:
+          - unique
+          - not_null
+
+      - name: user_id
+        description: "Foreign key to customers"
+        tests:
+          - not_null
+          - relationships:
+              to: source('marts', 'jaffle_shop_customers')
+              field: id
+
+      - name: order_date
+        description: "Date when order was placed"
+        tests:
+          - not_null
+
+      - name: status
+        description: "Order status"
+        tests:
+          - accepted_values:
+              values: ['placed', 'shipped', 'return_pending', 'completed', 'returned']
+
+
+  - name: stripe_payments_cleaned
+    description: "For every payment that was made "
+    columns:
+      - name: id
+        description: "Primary key for payments"
+        tests:
+          - unique
+          - not_null
+
+      - name: orderid
+        description: "Foreign key to orders"
+        tests:
+          - not_null
+          - relationships:
+              to: source('marts', 'jaffle_shop_orders_cleaned')
+              field: id
+
+      - name: paymentmethod
+        description: "Method that was used for the payment"
+        tests:
+          - accepted_values:
+              values: [ 'credit_card', 'coupon', 'bank_transfer', 'gift_card' ]
+
+      - name: status
+        description: "Status of the Payment made."
+        tests:
+          - accepted_values:
+              values: [ 'success', 'fail' ]
+
+      - name: amount
+        description: "Total of the payment made"
+        tests:
+          - not_null
+
+      - name: created
+        description: "Time when the payment was made"
+        tests:
+          - not_null

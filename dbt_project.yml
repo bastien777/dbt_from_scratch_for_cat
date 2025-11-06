@@ -1,0 +1,66 @@
+name: 'dbt_from_scratch_for_cat'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'cat_introduction'
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# Directory for compiled SQL files
+target-path: "target"
+# Directory for dbt artifacts (manifest.json, run_results.json, etc.)
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Configuring models
+models:
+  # Config applied to all models in this project
+  +materialized: table
+  +file_format: delta
+  +on_schema_change: "sync_all_columns"
+
+  # Staging models - views for initial transformations
+  staging:
+    +materialized: view
+    +schema: staging
+    +tags: ['staging']
+
+  # Intermediate models - ephemeral or views
+  intermediate:
+    +materialized: view
+    +schema: intermediate
+    +tags: ['intermediate']
+
+  # Marts models - production tables
+  marts:
+    +materialized: table
+    +tags: ['marts']
+
+# Seeds configuration
+seeds:
+  +schema: seed_data
+  +file_format: delta
+
+# Snapshots configuration
+snapshots:
+  +target_schema: snapshots
+  +strategy: timestamp
+  +updated_at: updated_at
+  +file_format: delta
+
+# Variables that can be used in models
+vars:
+  # Start date for incremental loads
+  start_date: '2024-01-01'
+  # Lookback days for incremental models
+  lookback_days: 3
+  # Enable/disable certain features
+  enable_logging: true

@@ -1,0 +1,119 @@
+version: 2
+
+models:
+
+  - name: fact_jaffle_shop_orders
+    description: "Fact table of the different shop orders that have happened and payments of these"
+    meta:
+      primary_key: ['order_id', 'user_id']
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - user_id
+      # Same number of rows?
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('jaffle_shop_orders_cleaned')
+          config:
+            severity: warn
+      # Same total between 2 columns of 2 different tables?
+      - equal_column_sum:
+          column_name: payment_amount
+          compare_model: ref('stripe_payments_cleaned')
+          compare_column_name: amount
+      # Tolerance test between 2 columns of 2 different tables
+      - equal_column_sum_with_tolerance:
+          column_name: payment_amount
+          compare_model: ref('stripe_payments_cleaned')
+          compare_column_name: amount
+          tolerance: 0.05
+
+    columns:
+      - name: order_id
+        description: "{{ doc('order_id') }}"
+        tests:
+          - not_null
+
+      - name: user_id
+        description: "{{ doc('user_id') }}"
+        tests:
+          - not_null
+
+      - name: order_date
+        description: "{{ doc('order_date') }}"
+        tests:
+          - not_null
+
+      - name: order_status
+        description: "Status of the order"
+        tests:
+          - accepted_values:
+              values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
+
+      - name: payment_id
+        description: "Unique Identifier of the Payments"
+
+      - name: payment_method
+        description: "Method that was used for the payment"
+
+      - name: payment_status
+        description: "Status of the Payment made."
+
+      - name: payment_amount
+        description: "Total of the payment made"
+
+      - name: payment_date
+        description: "Time when the payment was made"
+
+  - name: fact_jaffle_shop_orders_payments_by_customers
+    description: "Fact Table putting together all the orders, their payments, and information available on the different customers."
+    meta:
+      primary_key: [ 'order_id', 'user_id' ]
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - user_id
+
+    columns:
+      - name: order_id
+        description: "Unique identifier for the orders"
+        tests:
+          - not_null
+
+      - name: user_id
+        description: "Unique identifier of the customers"
+        tests:
+          - not_null
+
+      - name: order_date
+        description: "Date when the order happened"
+        tests:
+          - not_null
+
+      - name: order_status
+        description: "Status of the order"
+        tests:
+          - accepted_values:
+              values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
+
+      - name: payment_id
+        description: "Unique Identifier of the Payments"
+
+      - name: payment_method
+        description: "Method that was used for the payment"
+
+      - name: payment_status
+        description: "Status of the Payment made."
+
+      - name: payment_amount
+        description: "Total of the payment made"
+
+      - name: payment_date
+        description: "Time when the payment was made"
+
+      - name: first_name
+        description: "First Name of the Customer"
+
+      - name: last_name
+        description: "Last Name of the Customer"

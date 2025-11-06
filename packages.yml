@@ -1,0 +1,25 @@
+packages:
+  # dbt utilities - helpful macros for common tasks
+  # Includes: surrogate_key, date_spine, pivot, union_relations, etc.
+  - package: dbt-labs/dbt_utils
+    version: 1.1.1
+  
+  # Codegen - generate boilerplate code automatically
+  # Usage: dbt run-operation generate_model_yaml --args '{"model_names": ["stg_customers"]}'
+  - package: dbt-labs/codegen
+    version: 0.12.1
+  
+  # Audit helper - compare data between environments
+  # Useful for validating refactors and migrations
+  - package: dbt-labs/audit_helper
+    version: 0.9.0
+  
+  # Date spine and date dimension utilities
+  # Generates comprehensive date dimensions
+  - package: calogica/dbt_date
+    version: 0.10.1
+  
+  # Great Expectations integration for advanced testing
+  # Includes tests like: expect_column_values_to_be_between, expect_table_row_count_to_equal, etc.
+  - package: calogica/dbt_expectations
+    version: 0.10.3
