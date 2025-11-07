@@ -48,7 +48,8 @@ models:
         description: "Status of the order"
         tests:
           - accepted_values:
-              values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
+              arguments:
+                values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
 
       - name: payment_id
         description: "Unique Identifier of the Payments"
@@ -65,7 +66,7 @@ models:
       - name: payment_date
         description: "Time when the payment was made"
 
-  - name: fact_jaffle_shop_orders_payments_by_customers
+  - name: fact_jaffle_shop_orders_payments_by_customer
     description: "Fact Table putting together all the orders, their payments, and information available on the different customers."
     meta:
       primary_key: [ 'order_id', 'user_id' ]
@@ -95,7 +96,8 @@ models:
         description: "Status of the order"
         tests:
           - accepted_values:
-              values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
+              arguments:
+                values: [ 'placed', 'shipped', 'return_pending', 'completed', 'returned' ]
 
       - name: payment_id
         description: "Unique Identifier of the Payments"

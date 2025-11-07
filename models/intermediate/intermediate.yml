@@ -34,7 +34,7 @@ models:
         tests:
           - not_null
           - relationships:
-              to: source('marts', 'jaffle_shop_customers')
+              to: ref('jaffle_shop_customers_cleaned')
               field: id
 
       - name: order_date
@@ -46,7 +46,8 @@ models:
         description: "Order status"
         tests:
           - accepted_values:
-              values: ['placed', 'shipped', 'return_pending', 'completed', 'returned']
+              arguments:
+                values: ['placed', 'shipped', 'return_pending', 'completed', 'returned']
 
 
   - name: stripe_payments_cleaned
@@ -63,20 +64,22 @@ models:
         tests:
           - not_null
           - relationships:
-              to: source('marts', 'jaffle_shop_orders_cleaned')
+              to: ref('jaffle_shop_orders_cleaned')
               field: id
 
       - name: paymentmethod
         description: "Method that was used for the payment"
         tests:
           - accepted_values:
-              values: [ 'credit_card', 'coupon', 'bank_transfer', 'gift_card' ]
+              arguments:
+                values: [ 'credit_card', 'coupon', 'bank_transfer', 'gift_card' ]
 
       - name: status
         description: "Status of the Payment made."
         tests:
           - accepted_values:
-              values: [ 'success', 'fail' ]
+              arguments:
+                values: [ 'success', 'fail' ]
 
       - name: amount
         description: "Total of the payment made"

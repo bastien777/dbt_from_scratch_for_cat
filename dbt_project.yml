@@ -22,27 +22,26 @@ clean-targets:
 
 # Configuring models
 models:
-  # Config applied to all models in this project
-  +materialized: table
-  +file_format: delta
-  +on_schema_change: "sync_all_columns"
-
-  # Staging models - views for initial transformations
-  staging:
-    +materialized: view
-    +schema: staging
-    +tags: ['staging']
-
-  # Intermediate models - ephemeral or views
-  intermediate:
-    +materialized: view
-    +schema: intermediate
-    +tags: ['intermediate']
-
-  # Marts models - production tables
-  marts:
+  dbt_from_scratch_for_cat:
+    # Config applied to all models in this project
     +materialized: table
-    +tags: ['marts']
+    +file_format: delta
+    +on_schema_change: "sync_all_columns"
+
+    # Staging models - views for initial transformations
+    staging:
+      +materialized: view
+      +tags: ['staging']
+
+    # Intermediate models - ephemeral or views
+    intermediate:
+      +materialized: view
+      +tags: ['intermediate']
+
+    # Marts models - production tables
+    marts:
+      +materialized: table
+      +tags: ['marts']
 
 # Seeds configuration
 seeds:
@@ -59,7 +58,9 @@ snapshots:
 # Variables that can be used in models
 vars:
   # Start date for incremental loads
-  start_date: '2024-01-01'
+  start_date: '2018-01-01'
+  # Number of Days we woudl look for when executing
+  lookup_days: 30
   # Lookback days for incremental models
   lookback_days: 3
   # Enable/disable certain features

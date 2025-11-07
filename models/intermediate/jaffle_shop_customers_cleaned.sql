@@ -5,6 +5,7 @@
         , unique_key='id'
         , file_format='delta'
         , partition_by='id'
+        , tags=['dim', 'customers']
     )
 }}
 
